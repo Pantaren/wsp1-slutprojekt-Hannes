@@ -17,7 +17,14 @@ class App < Sinatra::Base
 
     # Routen /
     get '/' do
-        erb :index
+      @clothes = db.execute('SELECT * FROM clothes')
+      erb(:index)
+    end
+
+    get '/clothes/:id' do | id |
+      @article = db.execute('SELECT * FROM clothes WHERE id = ?', id).first
+      p @fruit
+      erb(:"show")
     end
 
 end
