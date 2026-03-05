@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruktparadiset</title>
+    <link rel="stylesheet" type="text/css" href="/style.css?<%=Time.now.to_i%>">
+</head>
+<body>
+    <header>
+        <h1 class="logo">Second Hand</h1>
+    </header>
+    <hr>
+    <nav>
+        <ul>
+            <li><a href="/">Startsida</a></li>
+            <li><a href="/clothes/new">Skapa en annons</a></li>
+        </ul>
+    </nav>
+    <hr>
+    <%= yield %>
+    <hr>
+    <footer>
+        <p>Kontakta oss</p>
+    </footer>
+</body>
+</html>
