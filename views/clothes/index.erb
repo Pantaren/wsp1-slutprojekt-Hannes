@@ -2,7 +2,8 @@
 <% @clothes.each do |cloth| %>
   <li>
     <a href="/clothes/<%= cloth['id'] %>"><%= cloth['title'] %></a>
-    
+    <img src="/img/<%= cloth['image'] %>" alt="<%= cloth['title'].capitalize %>" height="100px">
+
     <form class="delete" action="/clothes/<%=cloth["id"]%>/delete" method="post">
        		<input type="submit" value="Ta bort">
    	</form>

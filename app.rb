@@ -21,10 +21,59 @@ class App < Sinatra::Base
       erb(:"clothes/index")
     end
 
+    get '/clothes/new' do
+      @category = db.execute('SELECT * FROM categories')
+      erb(:"clothes/new")
+    end
+
+    post '/clothes' do
+      title = params["title"]
+      description = params["description"]
+      image = params["image"]
+      db.execute('INSERT INTO clothes (title, description, image) VALUES(?,?,?)', [title, description, image])
+      redirect('/')
+    end
+
     get '/clothes/:id' do | id |
       @article = db.execute('SELECT * FROM clothes WHERE id = ?', id).first
-      p @fruit
       erb(:"clothes/show")
+    end
+
+    get '/clothes/:id/edit' do | id |
+      @piece = db.execute('SELECT * FROM clothes WHERE id = ?', id).first
+      erb(:"clothes/edit")
+    end
+
+    post "/clothes/:id/update" do | id |
+      title = params["title"]
+      description = params["description"]
+      image = params["image"]
+
+      db.execute('UPDATE clothes SET title =?, image=?, description=? WHERE id =?', [title, image, description, id])
+      redirect('/')
+    end
+
+    post '/clothes/:id/delete' do | id |
+      db.execute('DELETE FROM clothes WHERE id = ?', id).first
+      redirect('/')
+    end
+
+    get '/categories' do
+      @categories = db.execute('SELECT * FROM categories')
+      erb(:"clothes/categories")
+    end
+
+    get '/categories/:id' do |id|
+      @cat_piece = db.execute('
+      SELECT * 
+      FROM clothes 
+      INNER JOIN cat_cloth_rel
+      ON clothes.id = cat_cloth_rel.cloth_id
+      INNER JOIN categories
+      ON cat_cloth_rel.cat_id = categories.id
+      WHERE categories.id = ?
+      ', id)
+      erb(:"clothes/category_id")
     end
 
 end
