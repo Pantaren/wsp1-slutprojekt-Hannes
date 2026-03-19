@@ -31,6 +31,14 @@ class App < Sinatra::Base
       description = params["description"]
       image = params["image"]
       db.execute('INSERT INTO clothes (title, description, image) VALUES(?,?,?)', [title, description, image])
+
+      new_id = db.last_insert_row_id
+      ap params
+      if params["category_ids"]
+        params["category_ids"].each do |cat_id|
+          db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES(?,?)', [new_id, cat_id])
+        end
+      end
       redirect('/')
     end
 

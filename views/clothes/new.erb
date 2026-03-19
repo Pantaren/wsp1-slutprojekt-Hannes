@@ -6,12 +6,12 @@
 	<label>Bild url <input type="text" name="image"></label>
 	<input type="submit" value="Spara">
 
-    <label>Kategori <input type="checkbox" name="Category"></label>
-    <select name="cars" id="cars">
-        <option value="volvo">Volvo</option>
-        <option value="saab">Saab</option>
-        <option value="mercedes">Mercedes</option>
-        <option value="audi">Audi</option>
-    </select>
+    <ul>
+        <% @category.each do |cat| %>
+          <li>
+            <label><%= cat['name'] %><input type="checkbox" name="category_ids[]" value="<%= cat['id'] %>"></label>
+          </li>
+        <% end %>
+    </ul>
 </form>
 

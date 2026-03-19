@@ -41,6 +41,8 @@ class Seeder
     db.execute('INSERT INTO clothes (title, description, image) VALUES ("Samis vita tröja", "Vit tröja med svarta detaljer. Kan möjligen lukta lite lätt av kebab och buldak noodles", "glhf.png")')
     db.execute('INSERT INTO clothes (title, description, image) VALUES ("Banan, använd", "En lite lätt använd banan, bra skick", "glhf.png")')
     db.execute('INSERT INTO clothes (title, description, image) VALUES ("Figges Nudie jeans", "Ett par blåa Nudie jeans i nästan nyköpt skick, bara lite utvidgade kring gutten", "glhf.png")')
+    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Samis strumpa", "En vit strumpa, lite krispig?", "glhf.png")')
+    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Ahmads svarta jeans", "Om man kollar noga kan man se kvarlevorna av folkmordet den förra ägaren begått mot falaflar", "glhf.png")')
 
     db.execute('INSERT INTO categories (name) VALUES ("Tröja")')
     db.execute('INSERT INTO categories (name) VALUES ("Byxa")')
@@ -52,6 +54,9 @@ class Seeder
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (1,4)')
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (2,3)')
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (3,2)')
+    db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (4,4)')
+    db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (5,2)')
+    db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (5,5)')
   end
 
   private
