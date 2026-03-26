@@ -1,0 +1,6 @@
+<h2>Uppdatera kategori</h2>
+
+<form action="/categories/<%= @cat_edit['id']%>/update" method="post">
+	<label>Kategori <input type="text" name="name" value="<%= @cat_edit['name']%>"></label>
+	<input type="submit" value="Spara">
+</form>

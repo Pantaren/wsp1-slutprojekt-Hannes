@@ -1,0 +1,15 @@
+<h2>Kategorier</h2>
+<ul>
+<% @categories.each do |cat| %>
+  <li>
+    <a href="/categories/<%= cat['id'] %>"><%= cat['name'] %></a>
+    <form class="delete" action="/categories/<%=cat["id"]%>/delete" method="post">
+       		<input type="submit" value="Ta bort">
+   	</form>
+    <form class="edit" action="/categories/<%=cat["id"]%>/edit" method="get">
+       		<input type="submit" value="Redigera">
+   	</form>
+  </li>
+<% end %>
+</ul>
+<a href="/categories/new">Skapa en ny kategori</a>

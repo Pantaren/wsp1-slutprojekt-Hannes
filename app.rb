@@ -68,7 +68,17 @@ class App < Sinatra::Base
 
     get '/categories' do
       @categories = db.execute('SELECT * FROM categories')
-      erb(:"clothes/categories")
+      erb(:"categories/index")
+    end
+
+        get '/categories/new' do
+      erb(:"categories/new")
+    end
+
+    post '/categories' do
+      name = params["name"]
+      db.execute('INSERT INTO categories (name) VALUES(?)', [name])
+      redirect('/')
     end
 
     get '/categories/:id' do |id|
@@ -81,7 +91,25 @@ class App < Sinatra::Base
       ON cat_cloth_rel.cat_id = categories.id
       WHERE categories.id = ?
       ', id)
-      erb(:"clothes/category_id")
+      erb(:"categories/show")
     end
+
+    get '/categories/:id/edit' do | id |
+      @cat_edit = db.execute('SELECT * FROM categories WHERE id = ?', id).first
+      erb(:"categories/edit")
+    end
+
+    post "/categories/:id/update" do | id |
+      name = params["name"]
+
+      db.execute('UPDATE categories SET name =? WHERE id =?', [name, id])
+      redirect('/')
+    end
+
+    post '/categories/:id/delete' do | id |
+      db.execute('DELETE FROM categories WHERE id = ?', id).first
+      redirect('/')
+    end
+
 
 end
