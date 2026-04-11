@@ -1,8 +1,8 @@
 <h2>Uppdatera annons</h2>
 
-<form action="/clothes/<%= @piece['id']%>/update" method="post">
-	<label>Titel <input type="text" name="title" value="<%= @piece['title']%>"></label>
-	<label>Beskrivning <input type="text" name="description" value="<%= @piece['description']%>"></label>
-	<label>Bild url <input type="text" name="image"value="<%= @piece['image']%>"></label>
+<form action="/clothes/<%= @clothes['id']%>/update" method="post">
+	<label>Titel <input type="text" name="title" value="<%= @clothes['title']%>"></label>
+	<label>Beskrivning <input type="text" name="description" value="<%= @clothes['description']%>"></label>
+	<label>Bild url <input type="text" name="image"value="<%= @clothes['image']%>"></label>
 	<input type="submit" value="Spara">
 </form>

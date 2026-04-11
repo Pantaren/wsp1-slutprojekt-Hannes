@@ -1,5 +1,9 @@
 require 'debug'
 require "awesome_print"
+require_relative 'models/base_model'
+require_relative 'models/clothing'
+require_relative 'models/category'
+require_relative 'models/user'
 
 class App < Sinatra::Base
 
@@ -15,14 +19,17 @@ class App < Sinatra::Base
       return @db
     end
 
-    # Routen /
     get '/' do
-      @clothes = db.execute('SELECT * FROM clothes')
+      redirect('/clothes')
+    end
+
+    get '/clothes' do
+      @clothes = Clothing.all
       erb(:"clothes/index")
     end
 
     get '/clothes/new' do
-      @category = db.execute('SELECT * FROM categories')
+      @category = Category.all
       erb(:"clothes/new")
     end
 
@@ -30,25 +37,25 @@ class App < Sinatra::Base
       title = params["title"]
       description = params["description"]
       image = params["image"]
-      db.execute('INSERT INTO clothes (title, description, image) VALUES(?,?,?)', [title, description, image])
+      Clothing.create(title, description, image)
 
       new_id = db.last_insert_row_id
-      ap params
       if params["category_ids"]
         params["category_ids"].each do |cat_id|
-          db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES(?,?)', [new_id, cat_id])
+          Clothing.create_relation(new_id, cat_id)
         end
       end
-      redirect('/')
+
+      redirect('/clothes')
     end
 
     get '/clothes/:id' do | id |
-      @article = db.execute('SELECT * FROM clothes WHERE id = ?', id).first
+      @clothes = Clothing.find(id)
       erb(:"clothes/show")
     end
 
     get '/clothes/:id/edit' do | id |
-      @piece = db.execute('SELECT * FROM clothes WHERE id = ?', id).first
+      @clothes = Clothing.find(id)
       erb(:"clothes/edit")
     end
 
@@ -57,57 +64,49 @@ class App < Sinatra::Base
       description = params["description"]
       image = params["image"]
 
-      db.execute('UPDATE clothes SET title =?, image=?, description=? WHERE id =?', [title, image, description, id])
+      Clothing.update(id, title, image, description)
       redirect('/')
     end
 
     post '/clothes/:id/delete' do | id |
-      db.execute('DELETE FROM clothes WHERE id = ?', id).first
+      Clothing.destroy(id)
       redirect('/')
     end
 
     get '/categories' do
-      @categories = db.execute('SELECT * FROM categories')
+      @categories = Category.all
       erb(:"categories/index")
     end
 
-        get '/categories/new' do
+    get '/categories/new' do
       erb(:"categories/new")
     end
 
     post '/categories' do
       name = params["name"]
-      db.execute('INSERT INTO categories (name) VALUES(?)', [name])
+      Category.create(name)
       redirect('/')
     end
 
     get '/categories/:id' do |id|
-      @cat_piece = db.execute('
-      SELECT * 
-      FROM clothes 
-      INNER JOIN cat_cloth_rel
-      ON clothes.id = cat_cloth_rel.cloth_id
-      INNER JOIN categories
-      ON cat_cloth_rel.cat_id = categories.id
-      WHERE categories.id = ?
-      ', id)
+      @cat_piece = Category.find_items(id)
       erb(:"categories/show")
     end
 
     get '/categories/:id/edit' do | id |
-      @cat_edit = db.execute('SELECT * FROM categories WHERE id = ?', id).first
+      @cat_edit = Category.find(id)
       erb(:"categories/edit")
     end
 
     post "/categories/:id/update" do | id |
       name = params["name"]
 
-      db.execute('UPDATE categories SET name =? WHERE id =?', [name, id])
+      Category.update(id, name)
       redirect('/')
     end
 
     post '/categories/:id/delete' do | id |
-      db.execute('DELETE FROM categories WHERE id = ?', id).first
+      Category.destroy(id)
       redirect('/')
     end
 
