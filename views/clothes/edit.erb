@@ -5,4 +5,18 @@
 	<label>Beskrivning <input type="text" name="description" value="<%= @clothes['description']%>"></label>
 	<label>Bild url <input type="text" name="image"value="<%= @clothes['image']%>"></label>
 	<input type="submit" value="Spara">
+
+	<ul>
+        <% @category.each do |cat| %>
+			<% if @relation.include?(cat['id']) %>
+          		<li>
+            		<label><%= cat['name'] %><input type="checkbox" checked name="category_ids[]" value="<%= cat['id'] %>"></label>
+          		</li>
+			<% else %>
+				<li>
+					<label><%= cat['name'] %><input type="checkbox" name="category_ids[]" value="<%= cat['id'] %>"></label>
+		  		</li>
+			<% end %>
+        <% end %>
+    </ul>
 </form>

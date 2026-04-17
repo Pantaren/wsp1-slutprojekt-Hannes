@@ -11,6 +11,8 @@ class Clothing < BaseModel
   def self.create(title, description, image)
     sql_clothes = 'INSERT INTO clothes (title, description, image) VALUES(?,?,?)'
     db.execute(sql_clothes, [title, description, image])
+
+    return db.last_insert_row_id
   end
 
   def self.create_relation(cloth_id, cat_id)

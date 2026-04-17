@@ -1,5 +1,6 @@
 require 'sqlite3'
 require_relative '../config'
+require 'bcrypt'
 
 class Seeder
 
@@ -18,6 +19,7 @@ class Seeder
     db.execute('DROP TABLE IF EXISTS clothes')
     db.execute('DROP TABLE IF EXISTS categories')
     db.execute('DROP TABLE IF EXISTS cat_cloth_rel')
+    db.execute('DROP TABLE IF EXISTS users')
   end
 
   def self.create_tables
@@ -34,8 +36,14 @@ class Seeder
     db.execute('CREATE TABLE cat_cloth_rel (
                 cloth_id INTEGER,
                 cat_id INTEGER)')
-    
+
+    db.execute('CREATE TABLE users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL)')
   end
+    
+
 
   def self.populate_tables
     db.execute('INSERT INTO clothes (title, description, image) VALUES ("Samis vita tröja", "Vit tröja med svarta detaljer. Kan möjligen lukta lite lätt av kebab och buldak noodles", "glhf.png")')
@@ -57,6 +65,10 @@ class Seeder
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (4,4)')
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (5,2)')
     db.execute('INSERT INTO cat_cloth_rel (cloth_id, cat_id) VALUES (5,5)')
+
+    password_hashed = BCrypt::Password.create("123")
+    p "Storing hashed password (#{password_hashed}) to DB. Clear text password (123) never saved."
+    db.execute('INSERT INTO users (username, password) VALUES (?, ?)', ["Hannes", password_hashed])
   end
 
   private

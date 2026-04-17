@@ -37,6 +37,10 @@ class Category < BaseModel
     return category
   end
 
+  def self.find_category_ids(id)
+    db.execute('SELECT cat_id FROM cat_cloth_rel WHERE cloth_id =?', id).map { |row| row["cat_id"] }
+  end
+
   def self.update(id, name)
     sql = 'UPDATE categories SET name =? WHERE id =?'
     db.execute(sql, [name, id])

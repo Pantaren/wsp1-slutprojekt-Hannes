@@ -16,6 +16,17 @@
             <li><a href="/">Startsida</a></li>
             <li><a href="/clothes/new">Skapa en annons</a></li>
             <li><a href="/categories">Kategorier</a></li>
+            
+            <% if @current_user %>
+                <li>
+                  <form class="delete" action="/logout" method="post">
+                    <input type="submit" value="Logga ut">
+                  </form>
+                </li>
+            <% else %>
+                <li><a href="/login">Logga in</a></li>
+                <li><a href="/users/new">Registrera</a></li>
+            <% end %>
         </ul>
     </nav>
     <hr>

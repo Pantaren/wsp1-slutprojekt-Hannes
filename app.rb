@@ -1,5 +1,7 @@
 require 'debug'
 require "awesome_print"
+require 'sinatra'
+require 'securerandom'
 require_relative 'models/base_model'
 require_relative 'models/clothing'
 require_relative 'models/category'
@@ -17,6 +19,78 @@ class App < Sinatra::Base
       @db.results_as_hash = true
 
       return @db
+    end
+
+    configure do
+      enable :sessions
+      set :session_secret, SecureRandom.hex(64)
+    end
+
+    before do
+      if session[:user_id]
+        @current_user = db.execute("SELECT * FROM users WHERE id = ?", session[:user_id]).first
+        ap @current_user
+      end
+    end
+
+    get '/admin' do
+      if session[:user_id]
+        erb(:"admin/index")
+      else
+        ap "/admin : Access denied."
+        status 401
+        redirect '/acces_denied'
+      end
+    end
+
+    get '/acces_denied' do
+      erb(:acces_denied)
+    end
+
+    get '/login' do
+      erb(:"users/login")
+    end
+
+    post '/login' do
+      request_username = params[:username]
+      request_plain_password = params[:password]
+
+      user = db.execute("SELECT *
+              FROM users
+              WHERE username = ?",
+              request_username).first
+
+      unless user
+        ap "/login : Invalid username."
+        status 401
+        redirect '/acces_denied'
+      end
+
+      db_id = user["id"].to_i
+      db_password_hashed = user["password"].to_s
+
+      # Create a BCrypt object from the hashed password from db
+      bcrypt_db_password = BCrypt::Password.new(db_password_hashed)
+      # Check if the plain password matches the hashed password from db
+      if bcrypt_db_password == request_plain_password
+        ap "/login : Logged in -> redirecting to admin"
+        session[:user_id] = db_id
+        redirect '/admin'
+      else
+        ap "/login : Invalid password."
+        status 401
+        redirect '/acces_denied'
+      end
+    end
+
+    post '/logout' do
+      ap "Logging out"
+      session.clear
+      redirect '/'
+    end
+
+    get '/users/new' do
+      erb(:"users/new")
     end
 
     get '/' do
@@ -37,9 +111,9 @@ class App < Sinatra::Base
       title = params["title"]
       description = params["description"]
       image = params["image"]
-      Clothing.create(title, description, image)
 
-      new_id = db.last_insert_row_id
+      new_id = Clothing.create(title, description, image)
+      
       if params["category_ids"]
         params["category_ids"].each do |cat_id|
           Clothing.create_relation(new_id, cat_id)
@@ -56,6 +130,10 @@ class App < Sinatra::Base
 
     get '/clothes/:id/edit' do | id |
       @clothes = Clothing.find(id)
+      @category = Category.all
+      @relation = Category.find_category_ids(id)
+      p @relation
+      p "----------------------------------------------------------------------"
       erb(:"clothes/edit")
     end
 
