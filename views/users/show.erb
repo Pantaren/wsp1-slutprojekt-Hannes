@@ -1,0 +1,9 @@
+<h2><%= @user['username'] %></h2>
+
+<p><em>Description: </em> <%= @user['description'] %></p>
+<form class="edit" action="/users/<%= @user['id'] %>/edit" method="get">
+    <input type="submit" value="Redigera">
+</form>
+<form class="delete" action="/users/<%= @user['id'] %>/delete" method="post">
+    <input type="submit" value="Ta bort">
+</form>

@@ -2,6 +2,7 @@ require 'debug'
 require "awesome_print"
 require 'sinatra'
 require 'securerandom'
+require 'bcrypt'
 require_relative 'models/base_model'
 require_relative 'models/clothing'
 require_relative 'models/category'
@@ -31,66 +32,6 @@ class App < Sinatra::Base
         @current_user = db.execute("SELECT * FROM users WHERE id = ?", session[:user_id]).first
         ap @current_user
       end
-    end
-
-    get '/admin' do
-      if session[:user_id]
-        erb(:"admin/index")
-      else
-        ap "/admin : Access denied."
-        status 401
-        redirect '/acces_denied'
-      end
-    end
-
-    get '/acces_denied' do
-      erb(:acces_denied)
-    end
-
-    get '/login' do
-      erb(:"users/login")
-    end
-
-    post '/login' do
-      request_username = params[:username]
-      request_plain_password = params[:password]
-
-      user = db.execute("SELECT *
-              FROM users
-              WHERE username = ?",
-              request_username).first
-
-      unless user
-        ap "/login : Invalid username."
-        status 401
-        redirect '/acces_denied'
-      end
-
-      db_id = user["id"].to_i
-      db_password_hashed = user["password"].to_s
-
-      # Create a BCrypt object from the hashed password from db
-      bcrypt_db_password = BCrypt::Password.new(db_password_hashed)
-      # Check if the plain password matches the hashed password from db
-      if bcrypt_db_password == request_plain_password
-        ap "/login : Logged in -> redirecting to admin"
-        session[:user_id] = db_id
-        redirect '/admin'
-      else
-        ap "/login : Invalid password."
-        status 401
-        redirect '/acces_denied'
-      end
-    end
-
-    post '/logout' do
-      ap "Logging out"
-      session.clear
-      redirect '/'
-    end
-
-    get '/users/new' do
-      erb(:"users/new")
     end
 
     get '/' do
@@ -188,5 +129,104 @@ class App < Sinatra::Base
       redirect('/')
     end
 
+    get '/users' do
+      @users = User.all
+      erb(:"users/index")
+    end
+
+    get '/users/new' do
+      erb(:"users/new")
+    end
+
+    post '/users' do
+      username = params["username"]
+      description = params["description"]
+      plain_password = params["password"]
+      hashed_password = BCrypt::Password.create(plain_password)
+
+      User.create(username, hashed_password, description)
+      redirect '/login'
+    end
+
+    get '/users/:id/edit' do |id|
+      @user = User.find(id)
+      erb(:"users/edit")
+    end
+
+    post '/users/:id/update' do |id|
+      username = params["username"]
+      description = params["description"]
+      if params["password"] && !params["password"].empty?
+        plain_password = params["password"]
+        hashed_password = BCrypt::Password.create(plain_password)
+        User.updatepassword(id, username, description, hashed_password)
+      else
+        User.update(id, username, description)
+      end
+
+      redirect("/users/#{id}")
+    end
+
+    get '/users/:id' do |id|
+      @user = User.find(id)
+      erb(:"users/show")
+    end
+
+    post '/users/:id/delete' do |id|
+      User.destroy(id)
+      redirect('/')
+    end
+
+    get '/admin' do
+      if session[:user_id]
+        erb(:"admin/index")
+      else
+        ap "/admin : Access denied."
+        status 401
+        redirect '/acces_denied'
+      end
+    end
+
+    get '/acces_denied' do
+      erb(:"users/acces_denied")
+    end
+
+    get '/login' do
+      erb(:"users/login")
+    end
+
+    post '/login' do
+      request_username = params[:username]
+      request_plain_password = params[:password]
+
+      user = User.find_by_username(request_username)
+
+      unless user
+        ap "/login : Invalid username."
+        status 401
+        redirect '/acces_denied'
+      end
+
+      db_id = user["id"].to_i
+      db_password_hashed = user["password"].to_s
+
+      # Create a BCrypt object from the hashed password from db
+      bcrypt_db_password = BCrypt::Password.new(db_password_hashed)
+      # Check if the plain password matches the hashed password from db
+      if bcrypt_db_password == request_plain_password
+        session[:user_id] = db_id
+        redirect '/clothes'
+      else
+        ap "/login : Invalid password."
+        status 401
+        redirect '/acces_denied'
+      end
+    end
+
+    post '/logout' do
+      ap "Logging out"
+      session.clear
+      redirect '/'
+    end
 
 end

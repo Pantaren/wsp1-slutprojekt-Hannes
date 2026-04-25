@@ -1,0 +1,6 @@
+<form action="/users/<%= @user['id'] %>/update" method="post">
+	<label>Username <input type="text" name="username" value="<%= @user['username'] %>"></label>
+	<label>Description <input type="text" name="description" value="<%= @user['description'] %>"></label>
+    <label>Lösenord <input type="password" name="password"></label>
+	<input type="submit" value="Spara">
+</form>

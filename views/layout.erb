@@ -18,6 +18,7 @@
             <li><a href="/categories">Kategorier</a></li>
             
             <% if @current_user %>
+                <li><a href="/users/<%= @current_user['id'] %>">Mitt konto</a></li>
                 <li>
                   <form class="delete" action="/logout" method="post">
                     <input type="submit" value="Logga ut">

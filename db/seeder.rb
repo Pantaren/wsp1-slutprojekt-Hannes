@@ -40,7 +40,8 @@ class Seeder
     db.execute('CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL,
-                password TEXT NOT NULL)')
+                password TEXT NOT NULL,
+                description TEXT)')
   end
     
 
@@ -68,7 +69,7 @@ class Seeder
 
     password_hashed = BCrypt::Password.create("123")
     p "Storing hashed password (#{password_hashed}) to DB. Clear text password (123) never saved."
-    db.execute('INSERT INTO users (username, password) VALUES (?, ?)', ["Hannes", password_hashed])
+    db.execute('INSERT INTO users (username, password, description) VALUES (?, ?, ?)', ["Hannes", password_hashed, "En fin pojk som älskar kläder men inte har tillräckligt med dem än"])
   end
 
   private

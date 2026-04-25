@@ -37,8 +37,10 @@ class Clothing < BaseModel
   end
 
   def self.destroy(id)
-    db.execute('DELETE FROM cat_cloth_rel WHERE cloth_id =?', id)
-    db.execute('DELETE FROM clothes WHERE id =?', id)
+    sql_clothes = 'DELETE FROM clothes WHERE id =?'
+    db.execute(sql_clothes, id)
+    sql_clothes_rel = 'DELETE FROM cat_cloth_rel WHERE cloth_id =?'
+    db.execute(sql_clothes_rel, id)
   end
 
 end
