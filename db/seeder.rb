@@ -26,7 +26,8 @@ class Seeder
     db.execute('CREATE TABLE clothes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
-                image TEXT NOT NULL, 
+                image TEXT NOT NULL,
+                user_id INTEGER NOT NULL, 
                 description TEXT)')
     
     db.execute('CREATE TABLE categories (
@@ -47,11 +48,11 @@ class Seeder
 
 
   def self.populate_tables
-    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Samis vita tröja", "Vit tröja med svarta detaljer. Kan möjligen lukta lite lätt av kebab och buldak noodles", "glhf.png")')
-    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Banan, använd", "En lite lätt använd banan, bra skick", "glhf.png")')
-    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Figges Nudie jeans", "Ett par blåa Nudie jeans i nästan nyköpt skick, bara lite utvidgade kring gutten", "glhf.png")')
-    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Samis strumpa", "En vit strumpa, lite krispig?", "glhf.png")')
-    db.execute('INSERT INTO clothes (title, description, image) VALUES ("Ahmads svarta jeans", "Om man kollar noga kan man se kvarlevorna av folkmordet den förra ägaren begått mot falaflar", "glhf.png")')
+    db.execute('INSERT INTO clothes (title, description, image, user_id) VALUES ("Samis vita tröja", "Vit tröja med svarta detaljer. Kan möjligen lukta lite lätt av kebab och buldak noodles", "glhf.png", 1)')
+    db.execute('INSERT INTO clothes (title, description, image, user_id) VALUES ("Banan, använd", "En lite lätt använd banan, bra skick", "glhf.png", 1)')
+    db.execute('INSERT INTO clothes (title, description, image, user_id) VALUES ("Figges Nudie jeans", "Ett par blåa Nudie jeans i nästan nyköpt skick, bara lite utvidgade kring gutten", "glhf.png", 1)')
+    db.execute('INSERT INTO clothes (title, description, image, user_id) VALUES ("Samis strumpa", "En vit strumpa, lite krispig?", "glhf.png", 1)')
+    db.execute('INSERT INTO clothes (title, description, image, user_id) VALUES ("Ahmads svarta jeans", "Om man kollar noga kan man se kvarlevorna av folkmordet den förra ägaren begått mot falaflar", "glhf.png", 1)')
 
     db.execute('INSERT INTO categories (name) VALUES ("Tröja")')
     db.execute('INSERT INTO categories (name) VALUES ("Byxa")')
@@ -69,7 +70,7 @@ class Seeder
 
     password_hashed = BCrypt::Password.create("123")
     p "Storing hashed password (#{password_hashed}) to DB. Clear text password (123) never saved."
-    db.execute('INSERT INTO users (username, password, description) VALUES (?, ?, ?)', ["Hannes", password_hashed, "En fin pojk som älskar kläder men inte har tillräckligt med dem än"])
+    db.execute('INSERT INTO users (username, password, description) VALUES (?, ?, ?)', ["Admin", password_hashed, "En fin pojk som älskar kläder men inte har tillräckligt med dem än"])
   end
 
   private

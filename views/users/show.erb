@@ -1,9 +1,36 @@
+
 <h2><%= @user['username'] %></h2>
 
 <p><em>Description: </em> <%= @user['description'] %></p>
-<form class="edit" action="/users/<%= @user['id'] %>/edit" method="get">
-    <input type="submit" value="Redigera">
-</form>
-<form class="delete" action="/users/<%= @user['id'] %>/delete" method="post">
-    <input type="submit" value="Ta bort">
-</form>
+<% if @current_user && @current_user['id'] == @user['id'] %>
+  <form class="edit" action="/users/<%= @user['id'] %>/edit" method="get">
+      <input type="submit" value="Redigera">
+  </form>
+  <form class="delete" action="/users/<%= @user['id'] %>/delete" method="post">
+      <input type="submit" value="Ta bort">
+  </form>
+<% end %>
+
+<% if @user_clothes.empty? %>
+  <p>Inga kläder hittades för denna användare.</p>
+<% else %>
+  <p>Kläder som ägs av <%= @user['username'] %>:</p>
+<% end %>
+
+<ul>
+<% @user_clothes.each do |cloth| %>
+  <li>
+    <a href="/clothes/<%= cloth['id'] %>"><%= cloth['title'] %></a>
+    <img src="/img/<%= cloth['image'] %>" alt="<%= cloth['title'].capitalize %>" height="100px">
+
+    <% if @current_user && @current_user['id'] == cloth['user_id'] %>
+      <form class="delete" action="/clothes/<%=cloth["id"]%>/delete" method="post">
+         		<input type="submit" value="Ta bort">
+      </form>
+      <form class="edit" action="/clothes/<%=cloth["id"]%>/edit" method="get">
+         		<input type="submit" value="Redigera">
+   	  </form>
+    <% end %>
+  </li>
+<% end %>
+</ul>

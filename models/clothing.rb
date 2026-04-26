@@ -8,9 +8,9 @@ class Clothing < BaseModel
     return clothes
   end
 
-  def self.create(title, description, image)
-    sql_clothes = 'INSERT INTO clothes (title, description, image) VALUES(?,?,?)'
-    db.execute(sql_clothes, [title, description, image])
+  def self.create(title, description, image, user_id)
+    sql_clothes = 'INSERT INTO clothes (title, description, image, user_id) VALUES(?,?,?,?)'
+    db.execute(sql_clothes, [title, description, image, user_id])
 
     return db.last_insert_row_id
   end
@@ -29,6 +29,12 @@ class Clothing < BaseModel
   def self.find_by_title(title)
     category = db.execute('SELECT * FROM clothes WHERE title LIKE ?', title).first
     return category
+  end
+
+  def self.find_by_user(user_id)
+    sql_clothes = 'SELECT * FROM clothes WHERE user_id =?'
+    clothes = db.execute(sql_clothes, user_id)
+    return clothes
   end
 
   def self.update(id, title, image, description)

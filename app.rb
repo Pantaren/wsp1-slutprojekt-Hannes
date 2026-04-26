@@ -29,7 +29,7 @@ class App < Sinatra::Base
 
     before do
       if session[:user_id]
-        @current_user = db.execute("SELECT * FROM users WHERE id = ?", session[:user_id]).first
+        @current_user = User.find(session[:user_id])
         ap @current_user
       end
     end
@@ -49,19 +49,23 @@ class App < Sinatra::Base
     end
 
     post '/clothes' do
-      title = params["title"]
-      description = params["description"]
-      image = params["image"]
+      if session[:user_id]
+        title = params["title"]
+        description = params["description"]
+        image = params["image"]
+        user_id = session[:user_id]
 
-      new_id = Clothing.create(title, description, image)
-      
-      if params["category_ids"]
-        params["category_ids"].each do |cat_id|
+        new_id = Clothing.create(title, description, image, user_id) 
+
+        if params["category_ids"]
+          params["category_ids"].each do |cat_id|
           Clothing.create_relation(new_id, cat_id)
         end
+        redirect('/clothes')
+      else
+        redirect('/login')
       end
-
-      redirect('/clothes')
+      end
     end
 
     get '/clothes/:id' do | id |
@@ -87,9 +91,15 @@ class App < Sinatra::Base
       redirect('/')
     end
 
-    post '/clothes/:id/delete' do | id |
-      Clothing.destroy(id)
-      redirect('/')
+    post '/clothes/:id/delete' do |id|
+      clothing = Clothing.find(id)
+  
+      if @current_user && @current_user['id'] == clothing['user_id']
+        Clothing.destroy(id)
+        redirect('/')
+      else
+        redirect('/acces_denied') # 
+      end
     end
 
     get '/categories' do
@@ -98,13 +108,21 @@ class App < Sinatra::Base
     end
 
     get '/categories/new' do
-      erb(:"categories/new")
+      if @current_user && @current_user['id'] == 1
+        erb(:"categories/new")
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post '/categories' do
-      name = params["name"]
-      Category.create(name)
-      redirect('/')
+      if @current_user && @current_user['id'] == 1
+        name = params["name"]
+        Category.create(name)
+        redirect('/')
+      else
+        redirect('/acces_denied')
+      end
     end
 
     get '/categories/:id' do |id|
@@ -113,20 +131,31 @@ class App < Sinatra::Base
     end
 
     get '/categories/:id/edit' do | id |
-      @cat_edit = Category.find(id)
-      erb(:"categories/edit")
+      if @current_user && @current_user['id'] == 1
+        @cat_edit = Category.find(id)
+        erb(:"categories/edit")
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post "/categories/:id/update" do | id |
       name = params["name"]
-
-      Category.update(id, name)
-      redirect('/')
+      if @current_user && @current_user['id'] == 1
+        Category.update(id, name)
+        redirect('/')
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post '/categories/:id/delete' do | id |
-      Category.destroy(id)
-      redirect('/')
+      if @current_user && @current_user['id'] == 1
+        Category.destroy(id)
+        redirect('/')
+      else
+        redirect('/acces_denied')
+      end
     end
 
     get '/users' do
@@ -156,19 +185,27 @@ class App < Sinatra::Base
     post '/users/:id/update' do |id|
       username = params["username"]
       description = params["description"]
-      if params["password"] && !params["password"].empty?
-        plain_password = params["password"]
-        hashed_password = BCrypt::Password.create(plain_password)
-        User.updatepassword(id, username, description, hashed_password)
-      else
-        User.update(id, username, description)
-      end
+      request_plain_password = params["password"]
 
+      user = User.find(id)
+      db_password_hashed = user["password"].to_s
+      bcrypt_db_password = BCrypt::Password.new(db_password_hashed)
+
+      if bcrypt_db_password == request_plain_password
+        if params["password_new"] && !params["password_new"].empty?
+          plain_password = params["password_new"]
+          hashed_password = BCrypt::Password.create(plain_password)
+          User.updatepassword(id, username, description, hashed_password)
+        else
+          User.update(id, username, description)
+        end
+      end
       redirect("/users/#{id}")
     end
 
     get '/users/:id' do |id|
       @user = User.find(id)
+      @user_clothes = Clothing.find_by_user(id)
       erb(:"users/show")
     end
 

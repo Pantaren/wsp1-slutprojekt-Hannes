@@ -14,10 +14,11 @@
     <nav>
         <ul>
             <li><a href="/">Startsida</a></li>
-            <li><a href="/clothes/new">Skapa en annons</a></li>
+            <li><a href="/users">Användare</a></li>
             <li><a href="/categories">Kategorier</a></li>
             
             <% if @current_user %>
+                <li><a href="/clothes/new">Skapa en annons</a></li>
                 <li><a href="/users/<%= @current_user['id'] %>">Mitt konto</a></li>
                 <li>
                   <form class="delete" action="/logout" method="post">
@@ -25,8 +26,8 @@
                   </form>
                 </li>
             <% else %>
-                <li><a href="/login">Logga in</a></li>
                 <li><a href="/users/new">Registrera</a></li>
+                <li><a href="/login">Logga in</a></li>
             <% end %>
         </ul>
     </nav>

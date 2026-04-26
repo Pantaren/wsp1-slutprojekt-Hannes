@@ -3,13 +3,14 @@
   <li>
     <a href="/clothes/<%= cloth['id'] %>"><%= cloth['title'] %></a>
     <img src="/img/<%= cloth['image'] %>" alt="<%= cloth['title'].capitalize %>" height="100px">
-
-    <form class="delete" action="/clothes/<%=cloth["id"]%>/delete" method="post">
-       		<input type="submit" value="Ta bort">
-      </form>
-    <form class="edit" action="/clothes/<%=cloth["id"]%>/edit" method="get">
-       		<input type="submit" value="Redigera">
-   	</form>
+    <% if @current_user && @current_user['id'] == cloth['user_id'] %>
+      <form class="delete" action="/clothes/<%=cloth["id"]%>/delete" method="post">
+         		<input type="submit" value="Ta bort">
+        </form>
+      <form class="edit" action="/clothes/<%=cloth["id"]%>/edit" method="get">
+         		<input type="submit" value="Redigera">
+   	  </form>
+    <% end %>
   </li>
 <% end %>
 </ul>
