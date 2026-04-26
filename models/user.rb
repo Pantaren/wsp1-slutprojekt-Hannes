@@ -38,6 +38,16 @@ class User < BaseModel
   def self.destroy(id)
     sql_users = 'DELETE FROM users WHERE id =?'
     db.execute(sql_users, id)
+    
+    sql_clothes = 'SELECT id FROM clothes WHERE user_id =?'
+    clothes = db.execute(sql_clothes, id)
+    clothes.each do |cloth|
+      sql_cloth_rel = 'DELETE FROM cat_cloth_rel WHERE cloth_id =?'
+      db.execute(sql_cloth_rel, cloth['id'])
+    end
+
+    sql_clothes = 'DELETE FROM clothes WHERE user_id =?'
+    db.execute(sql_clothes, id)
   end
 
 end

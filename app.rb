@@ -21,6 +21,22 @@ class App < Sinatra::Base
 
       return @db
     end
+    
+    helpers do
+      def login_cooldown_active?
+        if session[:last_login_attempt]
+          fail_count = session[:fail_count] || 0
+          required_wait = fail_count * 5 
+        
+          seconds_since_last_attempt = Time.now.to_i - session[:last_login_attempt].to_i
+        
+          if seconds_since_last_attempt < required_wait
+            return true
+          end
+        end
+        return false
+      end
+    end
 
     configure do
       enable :sessions
@@ -44,28 +60,39 @@ class App < Sinatra::Base
     end
 
     get '/clothes/new' do
-      @category = Category.all
-      erb(:"clothes/new")
-    end
-
-    post '/clothes' do
       if session[:user_id]
-        title = params["title"]
-        description = params["description"]
-        image = params["image"]
-        user_id = session[:user_id]
-
-        new_id = Clothing.create(title, description, image, user_id) 
-
-        if params["category_ids"]
-          params["category_ids"].each do |cat_id|
-          Clothing.create_relation(new_id, cat_id)
-        end
-        redirect('/clothes')
+        @category = Category.all
+        erb(:"clothes/new")
       else
         redirect('/login')
       end
+    end
+
+    post '/clothes' do
+      if !session[:user_id]
+        redirect '/login'
+        return
       end
+
+      title = params["title"]
+      description = params["description"]
+      image = params["image"]
+
+      if title.empty? || description.empty? || image.empty?
+        redirect '/clothes/new' 
+        return
+      end
+
+      user_id = session[:user_id]
+      new_id = Clothing.create(title, description, image, user_id)
+
+      if params["category_ids"]
+        params["category_ids"].each do |cat_id|
+          Clothing.create_relation(new_id, cat_id)
+        end
+      end
+
+      redirect '/clothes'
     end
 
     get '/clothes/:id' do | id |
@@ -74,31 +101,47 @@ class App < Sinatra::Base
     end
 
     get '/clothes/:id/edit' do | id |
-      @clothes = Clothing.find(id)
-      @category = Category.all
-      @relation = Category.find_category_ids(id)
-      p @relation
-      p "----------------------------------------------------------------------"
-      erb(:"clothes/edit")
+      if @current_user && @current_user['id'] == Clothing.find(id)['user_id'] || @current_user['id'] == 1
+        @clothes = Clothing.find(id)
+        @category = Category.all
+        @relation = Category.find_category_ids(id)
+        erb(:"clothes/edit")
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post "/clothes/:id/update" do | id |
+      if !session[:user_id]
+        redirect '/login'
+        return
+      end
+
       title = params["title"]
       description = params["description"]
       image = params["image"]
 
-      Clothing.update(id, title, image, description)
-      redirect('/')
+      if title.empty? || description.empty? || image.empty?
+        redirect '/clothes/new' 
+        return
+      end
+
+      if @current_user && @current_user['id'] == Clothing.find(id)['user_id'] || @current_user['id'] == 1
+        Clothing.update(id, title, image, description)
+        redirect('/')
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post '/clothes/:id/delete' do |id|
       clothing = Clothing.find(id)
   
-      if @current_user && @current_user['id'] == clothing['user_id']
+      if @current_user && @current_user['id'] == clothing['user_id'] || @current_user['id'] == 1
         Clothing.destroy(id)
         redirect('/')
       else
-        redirect('/acces_denied') # 
+        redirect('/acces_denied')
       end
     end
 
@@ -116,8 +159,19 @@ class App < Sinatra::Base
     end
 
     post '/categories' do
+      if !session[:user_id]
+        redirect '/login'
+        return
+      end
+
+      name = params["name"]
+
+      if name.empty?
+        redirect '/categories/new'
+        return
+      end
+
       if @current_user && @current_user['id'] == 1
-        name = params["name"]
         Category.create(name)
         redirect('/')
       else
@@ -140,7 +194,18 @@ class App < Sinatra::Base
     end
 
     post "/categories/:id/update" do | id |
+      if !session[:user_id]
+        redirect '/login'
+        return
+      end
+
       name = params["name"]
+
+      if name.empty?
+        redirect "/categories/#{id}/edit"
+        return
+      end
+
       if @current_user && @current_user['id'] == 1
         Category.update(id, name)
         redirect('/')
@@ -171,6 +236,12 @@ class App < Sinatra::Base
       username = params["username"]
       description = params["description"]
       plain_password = params["password"]
+
+      if username.empty? || description.empty? || plain_password.length < 8
+        redirect '/users/new'
+        return
+      end
+
       hashed_password = BCrypt::Password.create(plain_password)
 
       User.create(username, hashed_password, description)
@@ -178,14 +249,34 @@ class App < Sinatra::Base
     end
 
     get '/users/:id/edit' do |id|
-      @user = User.find(id)
-      erb(:"users/edit")
+      if !session[:user_id]
+        redirect '/login'
+        return
+      end
+
+      if @current_user && @current_user['id'] == id.to_i || @current_user['id'] == 1
+        @user = User.find(id)
+        erb(:"users/edit")
+      else
+        redirect('/acces_denied')
+      end
     end
 
     post '/users/:id/update' do |id|
+
+      if !session[:user_id]
+        redirect '/login'
+        return
+      end
+
       username = params["username"]
       description = params["description"]
       request_plain_password = params["password"]
+
+      if username.empty? || description.empty? || request_plain_password.empty?
+        redirect "/users/#{id}/edit"
+        return
+      end
 
       user = User.find(id)
       db_password_hashed = user["password"].to_s
@@ -193,11 +284,20 @@ class App < Sinatra::Base
 
       if bcrypt_db_password == request_plain_password
         if params["password_new"] && !params["password_new"].empty?
+
+          if params["password_new"].length < 8
+            redirect "/users/#{id}/edit"  
+            return
+          end
+
           plain_password = params["password_new"]
           hashed_password = BCrypt::Password.create(plain_password)
           User.updatepassword(id, username, description, hashed_password)
+
         else
+
           User.update(id, username, description)
+
         end
       end
       redirect("/users/#{id}")
@@ -210,12 +310,16 @@ class App < Sinatra::Base
     end
 
     post '/users/:id/delete' do |id|
-      User.destroy(id)
-      redirect('/')
+      if @current_user && @current_user['id'] == id.to_i || @current_user['id'] == 1
+        User.destroy(id)
+        redirect('/')
+      else
+        redirect('/acces_denied')
+      end
     end
 
     get '/admin' do
-      if session[:user_id]
+      if @current_user['id'] == 1
         erb(:"admin/index")
       else
         ap "/admin : Access denied."
@@ -233,28 +337,33 @@ class App < Sinatra::Base
     end
 
     post '/login' do
+
+      if login_cooldown_active?
+        redirect '/acces_denied'
+        return 
+      end
+
+      session[:last_login_attempt] = Time.now.to_i
+
       request_username = params[:username]
       request_plain_password = params[:password]
-
       user = User.find_by_username(request_username)
 
       unless user
-        ap "/login : Invalid username."
+        session[:fail_count] = (session[:fail_count] || 0) + 1
         status 401
         redirect '/acces_denied'
+        return
       end
+    
+      bcrypt_db_password = BCrypt::Password.new(user["password"].to_s)
 
-      db_id = user["id"].to_i
-      db_password_hashed = user["password"].to_s
-
-      # Create a BCrypt object from the hashed password from db
-      bcrypt_db_password = BCrypt::Password.new(db_password_hashed)
-      # Check if the plain password matches the hashed password from db
       if bcrypt_db_password == request_plain_password
-        session[:user_id] = db_id
+        session[:user_id] = user["id"].to_i
+        session[:fail_count] = 0
         redirect '/clothes'
       else
-        ap "/login : Invalid password."
+        session[:fail_count] = (session[:fail_count] || 0) + 1
         status 401
         redirect '/acces_denied'
       end
