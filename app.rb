@@ -151,7 +151,7 @@ class App < Sinatra::Base
 
     # Beskrivning: Uppdaterar informationen för ett specifikt klädesplagg
     # Argument 1: Integer som ID för plagget
-    # Argument 2: params["title"], params["description"], params["image"]
+    # Argument 2: params["title"], params["description"], params["image"], params["category_ids"]
     # Return: Redirect till startsidan
     # Datum: 2026-04-26
     # Namn: Hannes
@@ -172,6 +172,12 @@ class App < Sinatra::Base
 
       if @current_user && @current_user['id'] == Clothing.find(id)['user_id'] || @current_user['id'] == 1
         Clothing.update(id, title, image, description)
+        
+        Clothing.delete_relations(id)
+        params["category_ids"].each do |cat_id|
+          Clothing.create_relation(id, cat_id)
+        end
+        
         redirect('/')
       else
         redirect('/acces_denied')

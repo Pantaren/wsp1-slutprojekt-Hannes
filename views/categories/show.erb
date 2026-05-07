@@ -4,12 +4,14 @@
     <a href="/clothes/<%= cat_article['id'] %>"><%= cat_article['title'] %></a>
     <img src="/img/<%= cat_article['image'] %>" alt="<%= cat_article['title'].capitalize %>" height="100px">
 
-    <form class="delete" action="/clothes/<%=cat_article["id"]%>/delete" method="post">
-       		<input type="submit" value="Ta bort">
-   	</form>
-    <form class="edit" action="/clothes/<%=cat_article["id"]%>/edit" method="get">
-       		<input type="submit" value="Redigera">
-   	</form>
+    <% if @current_user && @current_user['id'] == cat_article['user_id'] %>
+      <form class="delete" action="/clothes/<%=cat_article["id"]%>/delete" method="post">
+         		<input type="submit" value="Ta bort">
+        </form>
+      <form class="edit" action="/clothes/<%=cat_article["id"]%>/edit" method="get">
+         		<input type="submit" value="Redigera">
+   	  </form>
+    <% end %>
   </li>
 <% end %>
 </ul>

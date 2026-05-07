@@ -39,6 +39,16 @@ class Clothing < BaseModel
     db.execute(sql_clothes, [cloth_id, cat_id])
   end
 
+  # Beskrivning: Tar bort relationerna mellan ett klädesplagg och kategorierna i en join-tabell
+  # Argument 1: Integer som är ID för klädesplagget
+  # Return: void
+  # Datum: 2026-04-29
+  # Namn: Hannes
+  def self.delete_relations(cloth_id)
+    sql_clothes = 'DELETE FROM cat_cloth_rel WHERE cloth_id =?'
+    db.execute(sql_clothes, cloth_id)
+  end
+
   # Beskrivning: Hittar ett specifikt klädesplagg baserat på dess ID
   # Argument 1: Integer som representerar plaggets ID
   # Return: En hash med plaggets data, eller nil om det inte hittas

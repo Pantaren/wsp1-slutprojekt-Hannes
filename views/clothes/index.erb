@@ -3,7 +3,7 @@
   <li>
     <a href="/clothes/<%= cloth['id'] %>"><%= cloth['title'] %></a>
     <img src="/img/<%= cloth['image'] %>" alt="<%= cloth['title'].capitalize %>" height="100px">
-    <% if @current_user && @current_user['id'] == cloth['user_id'] %>
+    <% if @current_user && @current_user['id'] == cloth['user_id'] || @current_user && @current_user['id'] == 1 %>
       <form class="delete" action="/clothes/<%=cloth["id"]%>/delete" method="post">
          		<input type="submit" value="Ta bort">
         </form>
